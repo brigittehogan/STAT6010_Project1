@@ -228,6 +228,17 @@ summary(price_v_carat)
 
 ###### Melissa's Stuff  #####
 
+#externally studentized residuals for mod0
+ext_s_resids3 <- studres(mod0)
+
+#qq-plot for mod0 
+qq_plot1 <- qqnorm(ext_s_resids3)
+
+##Homoskedasticity for mod0
+
+plot(fitted.values(mod0), ext_s_resids3)
+
+
 plot(logCarat, logPrice)
 
 #fitting another linear model to the new data
