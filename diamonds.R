@@ -114,7 +114,21 @@ diam$cut_plotting2 <- factor(diam$cut_plotting2,
 # RColorBrewer::display.brewer.all() # color palettes
 mapColor <- hcl.colors(8, palette="Blues")
 
-# Based on number of values
+# General map based on number of values
+treemap(diam,
+        index=c("cut_plotting2"),
+        vSize="freq", 
+        title="",
+        type="value",
+        # graphic options
+        palette = -mapColor,
+        fontsize.labels = c(26), bg.labels=0, 
+        fontface.labels = c("bold"),
+        fontcolor.labels = c("red3"),
+        border.col = c("black"),
+        border.lwds = c(7))
+
+# Nested by color & clarity
 treemap(diam,
         index=c("cut_plotting2","color","clarity"),
         vSize="freq", 
@@ -127,23 +141,6 @@ treemap(diam,
         fontcolor.labels = c("red3", "gray40", "gray10"),
         border.col = c("black", "black", "white"),
         border.lwds = c(7,3,1))
-
-# Based on Price (trickier)
-treemap(diam, 
-        index=c("cut","color"),      # how to divide up data
-        vSize="freq",                           # size of rectangles
-        type="manual",                          # manual color palette
-        # graphic options
-        vColor = "price", fun.aggregate="sum", # color is average price
-        palette = "Greens",
-        fontsize.labels = c(26, 20), bg.labels=0, 
-        fontface.labels = c("bold", "bold"),
-        fontcolor.labels = c("red3", "gray40"),
-        border.col = c("black", "black"),
-        border.lwds = c(7,3))
-
-diam %>% group_by(cut) %>% summarize(n=mean(price))
-# Astor Ideal has lowest (!) average price
 
 #__________________#############################################################
 # CHECKING ASSUMPTIONS ####
