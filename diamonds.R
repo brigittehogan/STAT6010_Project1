@@ -1,35 +1,7 @@
 # Activity: STAT 6021 Project 1 - Diamonds
-# Team Members: Brigitte Hogan (bwh5v), Sherry Kausch, Melissa Phillips, Jason Tiezzi
+# Team Members: Brigitte Hogan (bwh5v), Sherry Kausch (slk7s), Melissa Phillips (mcp3vj), Jason Tiezzi (jbt5am)
 # Source of Data: BlueNile.com
 # Deadline: Friday, July 19th @0900
-
-
-# Each project should feature:
-# - Clear central analytic goals and/or questions to answer 
-#   (the more interesting/ challenging/ practical, the better)
-# - a "substantial" computational component for the analysis
-# - analytic methods developed in this course
-
-# The deliverables are
-# 1. Report (.doc, .docx, or .pdf)
-#    - less than 10 pages, and include:
-#    - an execsum describing the high-level goals/questions of the project
-#    - the nature/characteristics of the data used in the analysis
-#    - the results of the analysis, including any recommendations
-#    - make use of graphics wherever appropriate.
-#    - use correct grammar, clear explanations, and professional presentation
-#    - audience: both clients (no experience analyzing data) & data scientists/
-#      statisticians (given the report for a second opinion)
-#
-# 2. Reproducible R-code (.r file)
-#    - commented/annotated R code
-#
-# 3. Presentation document (.pdf, .ppt, etc.)
-#    - each team will give an 8-minute presentation
-#    - not everyone needs to speak, but all team members should make equal
-#      contributions to the project as a whole.
-#    - audience: understandable by anyone familiar with the course material, but
-#      who has not read your project report yet
 
 
 #__________________###########################################################
@@ -303,20 +275,14 @@ confint(mod1, parm = "cutAstor Ideal", level = .95)
 # Setting up a data frame to store variables for predictions
 # You can experiment by changing the cut from "Astor Ideal" to "Ideal" given various combinations of the other variables to see how much our estimated price would change for any given set of circumstances. In all cases, the predicted price for "Astor Ideal" is 8.57% more than the predicted price of an otherwise comparable Ideal diamond.
 
-predict_data <- data.frame(clarity = 'SI2', color = 'J', cut = 'Astor Ideal', carat = .28 )   
+predict_data <- data.frame(clarity = 'SI2', color = 'J', cut = 'Astor Ideal', logCarat = .28 )   
 predict(mod1, predict_data, interval = "confidence", level = .95)
 
 #__________________#############################################################
-# x vs y Plots ----
-
+# x vs y Plots ---
 diam %>%
-  ggplot(aes(x=logCarat, y=logPrice, alpha=rev(color), color=clarity)) +
-  scale_color_brewer(type = 'div') + 
-  geom_point()
-
-diam %>%
-  ggplot(aes(x=carat, y=logPrice, alpha=0.1, shape=cut, 
-             color=clarity, size=color)) +
+  ggplot(aes(x=logCarat, y=logPrice, alpha=0.1, shape=cut, 
+             color=color, size=clarity)) +
   scale_color_brewer(type = 'div') + 
   geom_point()
 
