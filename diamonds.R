@@ -87,12 +87,12 @@ summary(diam)
 
 # y (dependent)
 range(diam$price) # large range from 229 to 2,000,000+
-mean(diam$price) # mean of $5540
+mean(diam$price)  # mean of $5540
 quantile(diam$price) %>% plot()
 
 # carat - continuous
 range(diam$carat) # large range from 0.23 to 20.45
-mean(diam$carat) # 0.76
+mean(diam$carat)  # 0.76
 quantile((diam$carat)) %>% plot()
 
 # clarity - discrete
@@ -104,7 +104,7 @@ table(diam$cut) # most diamonds are ideal, followed by Very Good & Good
 # color - discrete
 table(diam$color) # few poor color diamonds, but otherwise even distribution
 
-## descriptive plots ####
+## Descriptive Plots ####
 
 diam$freq <- 1 # creates count variable for plotting
 diam$cut_plotting2 <- as.character(diam$cut) # another plotting option
@@ -121,7 +121,7 @@ treemap(diam,
         title="",
         type="value",
         # graphic options
-        palette = -mapColor,
+        palette = rev(mapColor),
         fontsize.labels = c(26), bg.labels=0, 
         fontface.labels = c("bold"),
         fontcolor.labels = c("red3"),
@@ -144,9 +144,26 @@ treemap(diam,
 
 #__________________#############################################################
 # CHECKING ASSUMPTIONS ####
-diam %>% ggplot(aes(carat, price)) + geom_point() # scatterplot
+
+# 1.  Testing for a linear relationship between price and carat ----
+
+partial_mod1 <- lm(price ~ carat, data = diam)
+summary(partial_mod1)
+
+# Basic Scatterplot
+diam %>% ggplot(aes(carat, price, alpha=0.5)) + 
+  geom_point() +
+  xlab("Carat") +
+  ylab("BlueNile List Price in US Dollars") +
+  theme(legend.position="none")
 # relationship between carat & price does not look linear
 
+# externally studentized residuals
+ext_s_resids <- studres(partial_mod1)
+qqnorm(ext_s_resids)
+qqline(ext_s_resids)
+
+# Fitting another linear model to the new data
 # we know from descriptive stats that they both have a wide range and there is very little data in the upper quantile
 # to adjust the scale, we try log-transformation of y value
 diam$logPrice <- log10(diam$price) # log base 10 transform
@@ -155,14 +172,24 @@ diam %>% ggplot(aes(carat, logPrice)) + geom_point() # scatterplot
 # try similar transformation for carat
 diam$logCarat <- log10(diam$carat)
 
-diam %>% ggplot(aes(logCarat, logPrice)) + geom_point() # scatterplot
-# relationship now appears linear and points are more evenly spread
+# fitting the new model
+partial_mod2 <- lm(logCarat ~ logPrice, data = diam)
+summary(partial_mod2)
 
-# 1. Price (continuous)
+#externally studentized residuals
+ext_s_resids <- studres(partial_mod2)
+
+#qq-plot
+qqnorm(ext_s_resids)
+qqline(ext_s_resids)
+
+# new scatterplot
+diam %>% ggplot(aes(logCarat, logPrice)) + geom_point()
+# relationship now appears linear and points are more evenly spread
+# checking dependent variable
 hist(diam$price)
 hist(diam$logPrice) 
 # the log transformation has improved skew in data, but still some R skew
-hist(sqrt(diam$price + 0.5)) # no help
 diam %>% ggplot(aes(price)) + 
   geom_histogram(bins = 30) +
   ylab("Number of Diamonds") +
@@ -172,7 +199,9 @@ diam %>% ggplot(aes(logPrice)) +
   ylab("Number of Diamonds") +
   xlab("log(Price)")
 
-# 1. Carat (continuous) ----
+# 2. Checking Predictors ----
+
+# A. Carat (continuous) ----
 hist(diam$carat)
 hist(diam$logCarat)
 diam %>% ggplot(aes(carat)) + 
@@ -185,17 +214,17 @@ diam %>% ggplot(aes(logCarat)) +
   ylab("Number of Diamonds") +
   xlab("log(Carat)")
 
-# 2. Clarity (discrete, 8 levels) ----
+# B. Clarity (discrete, 8 levels) ----
 diam %>% ggplot(aes(clarity)) + geom_bar() + 
   ylab("Number of Diamonds") +
   xlab("Clarity")
 
-# 3. Color (discrete, 7 levels) ----
+# C. Color (discrete, 7 levels) ----
 diam %>% ggplot(aes(color)) + geom_bar() + 
   ylab("Number of Diamonds") +
   xlab("Color")
 
-# 4. Cut (discrete, 4 levels) ----
+# D. Cut (discrete, 4 levels) ----
 diam %>% ggplot(aes(cut_plotting)) + geom_bar() + 
   ylab("Number of Diamonds") +
   xlab("Cut")
@@ -209,111 +238,76 @@ diam %>% ggplot(aes(color, logPrice)) +  geom_boxplot()
 diam %>% ggplot(aes(cut, logPrice)) +  geom_boxplot()
 
 
-#1.  testing for a linear relationship between price and carat.
-
-plot(diam$carat, diam$price)
-
-price_v_carat <- lm(price ~ carat, data = diam)
-
-summary(price_v_carat)
-
-#apply transformation of y to y' = log(y) as previously shown
-#diam$transformed_price <- log10(diam$"price")
-
-#apply transformation of x to x' = log(x)
-#diam$transformed_carat <- log10(diam$"carat")
-
-###### Melissa's Stuff  #####
-
-plot(logCarat, logPrice)
-
-#fitting another linear model to the new data
-tprice_v_tcarat <- lm(logCarat ~ logPrice, data = diam)
-
-summary(tprice_v_tcarat)
-
-#externally studentized residuals
-ext_s_resids <- studres(tprice_v_tcarat)
-
-#qq-plot
-qq_plot1 <- qqnorm(ext_s_resids)
-
-#fitting the complete linear model (previously done as mod1)
-
-#find externally studentized residuals
-ext_s_resids2 <- studres(mod1)
-
-#qq-plot
-qq_plot2 <- qqnorm(ext_s_resids2)
-qq_line2 <- qqline(ext_s_resids2)
-
-#plot looks quite linear suggesting normal distribution of residuals, though there is some indication of fat tails
-
-##another check for normality of residuals - Histogram
-
-x_grid <- seq(min(ext_s_resids2)-.5, max(ext_s_resids2)+.5, by = .01)
-diam <- nrow(my_data) - 7 - 1 # 7 predictors and one intercept
-hist(ext_s_resids2, probability = T, ylim = c(0,.5))
-
-##checking Homoskedastitcity
-
-plot(fitted.values(mod1), ext_s_resids2)
-
-## This plot shoes that the residuals are unpredictable in relation to the fitted values, so the variance is random.
-
-
-#### added variable plots
-
-#av_plots <- avPlots(full_mod)
-
-
-#Hypothesis testing to test H0: B2 = B3 = B4 = B5 = 0
-
-
-anova(tprice_v_tcarat, mod1, data = diam)
-
-
 #__________________#############################################################
 # MODELING ####
 
-# untransformed data, for reference
+# untransformed data, full model, for reference
 mod0 <- lm(price ~ ., data = diam)
 extern_s_resids0 <- studres(mod0)
 qqnorm(extern_s_resids0)
 qqline(extern_s_resids0)
 
-# Going FWD with model 1
-
+# Fitting the complete linear model
 # linear model 1
 mod1 <- lm(logPrice ~ logCarat + clarity + color + cut, data = diam)
 
+## RECHECKING ASSUMPTIONS ----
+
+#find externally studentized residuals
 extern_s_resids1 <- studres(mod1)
+
+# QQ Plot ####
 qqnorm(extern_s_resids1)
 qqline(extern_s_resids1) # still an issue at tails, but much improved
 
+# Normality of Residuals ####
 plot(fitted.values(mod1), extern_s_resids1) # looks random
+#plot looks quite linear suggesting normal distribution of residuals, though there is some indication of fat tails
 
+# Another check for normality of residuals - Histogram ####
+hist(extern_s_resids1, probability = T, ylim = c(0,.5))
+
+# Homoskedastitcity ####
+plot(fitted.values(mod1), extern_s_resids1)
+
+## This plot shoes that the residuals are unpredictable in relation to the fitted values, so the variance is random.
+
+# Value of Variables ####
+# Added variable plots
+#av_plots <- avPlots(mod1)
+# commented out, takes time to run
+
+#Hypothesis testing to test H0: B2 = B3 = B4 = B5 = 0
+anova(partial_mod2, mod1, data = diam)
+
+# Checking for Correlations #### 
 vif(mod1)
 
-summary(mod1)$r.squared # 0.9813
-summary(mod1)$fstatistic # 651,746 huge!
-getPmodel(mod1) # pretty much 0
+# Going FWD with model 1
 
-aov(mod1)
 
 #__________________#############################################################
 # Question: Is Astor Ideal important? ----
 
 summary(mod1)
+summary(mod1)$r.squared # 0.9813
+summary(mod1)$fstatistic # 651,746 huge!
+getPmodel(mod1) # pretty much 0
+aov(mod1)
+
+# Confidence Intervals ####
+
+confint(mod1, parm = "cutAstor Ideal", level = .95)
+
+# Predictions ####
+# Setting up a data frame to store variables for predictions
+# You can experiment by changing the cut from "Astor Ideal" to "Ideal" given various combinations of the other variables to see how much our estimated price would change for any given set of circumstances. In all cases, the predicted price for "Astor Ideal" is 8.57% more than the predicted price of an otherwise comparable Ideal diamond.
+
+predict_data <- data.frame(clarity = 'SI2', color = 'J', cut = 'Astor Ideal', carat = .28 )   
+predict(mod1, predict_data, interval = "confidence", level = .95)
 
 #__________________#############################################################
 # x vs y Plots ----
-
-
-# some different options
-diam %>%
-  ggplot(aes(x=logCarat, y=logPrice, alpha=0.1, color=color, size=cut)) +
-  geom_point()
 
 diam %>%
   ggplot(aes(x=logCarat, y=logPrice, alpha=rev(color), color=clarity)) +
