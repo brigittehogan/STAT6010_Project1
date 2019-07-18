@@ -79,7 +79,7 @@ diam$cut <- factor(diam$cut,
 contrasts(diam$cut) # how cut will be coded in lm
 # save actual order for plotting
 diam$cut_plotting <- factor(diam$cut, 
-                        levels = c("Good", "Very Good", "Ideal", "Astor Ideal"))
+                            levels = c("Good", "Very Good", "Ideal", "Astor Ideal"))
 
 #__________________#############################################################
 # DESCRIPTIVE STATS ####
@@ -228,17 +228,6 @@ summary(price_v_carat)
 
 ###### Melissa's Stuff  #####
 
-#externally studentized residuals for mod0
-ext_s_resids3 <- studres(mod0)
-
-#qq-plot for mod0 
-qq_plot1 <- qqnorm(ext_s_resids3)
-
-##Homoskedasticity for mod0
-
-plot(fitted.values(mod0), ext_s_resids3)
-
-
 plot(logCarat, logPrice)
 
 #fitting another linear model to the new data
@@ -320,34 +309,6 @@ aov(mod1)
 
 summary(mod1)
 
-
-
-
-
-
-# make model without astor ideal and with astor ideal and compare??
-diam$cutNoAstor <- as.character(diam$cut)
-diam$cutNoAstor <- replace(diam$cutNoAstor, diam$cutNoAstor=="Astor Ideal", "Ideal")
-diam$cutNoAstor <- factor(diam$cutNoAstor,
-                          levels = c("Ideal", "Good", "Very Good"))
-
-mod_noAst <- lm(logPrice ~ logCarat + clarity + color + cutNoAstor, data = diam)
-summary(mod1)
-summary(mod_noAst)
-#                       Estimate Std. Error t value Pr(>|t|)  
-# cutGood             -0.0939674  0.0006377 -147.35   <2e-16 ***
-# cutVery Good        -0.0740186  0.0003550 -208.48   <2e-16 ***
-# cutAstor Ideal       0.0357356  0.0012574   28.42   <2e-16 ***
-# ----
-# cutNoAstorGood      -0.0949383  0.0006380 -148.81   <2e-16 ***
-# cutNoAstorVery Good -0.0749808  0.0003541 -211.75   <2e-16 ***
-anova(mod1)
-anova(mod_noAst)
-#                Df Sum Sq Mean Sq  F value    Pr(>F)  
-# cut             3    298      99    19226 < 2.2e-16 ***
-# cutNoAstor      2    294     147    28327 < 2.2e-16 ***
-anova(mod_noAst, mod1) # smallest to largest
-
 #__________________#############################################################
 # x vs y Plots ----
 
@@ -361,11 +322,10 @@ diam %>%
   ggplot(aes(x=logCarat, y=logPrice, alpha=rev(color), color=clarity)) +
   scale_color_brewer(type = 'div') + 
   geom_point()
-  
+
 diam %>%
   ggplot(aes(x=carat, y=logPrice, alpha=0.1, shape=cut, 
              color=clarity, size=color)) +
   scale_color_brewer(type = 'div') + 
   geom_point()
 
-  
